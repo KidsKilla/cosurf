@@ -1,15 +1,28 @@
 // import { io } from 'socket.io-client'
 
-const socket = io()
+const connect = () => {
+  const socket = io()
 
-socket.on('connect', () => {
-  console.log('Connected')
-})
+  socket.on('connect', () => {
+    console.log('Connected')
+  })
 
-socket.on('user-connected', ({ userId }) => {
-  console.log(`User connected, id: ${userId}`)
-})
+  socket.on('init', (data) => {
+    console.log(`Init`, data)
+  })
 
-socket.on('user-disconnected', ({ userId }) => {
-  console.log(`User disconnected, id: ${userId}`)
-})
+  socket.on('users-change', (room) => {
+    console.log(`Users changed`, room)
+  })
+
+  return socket
+}
+
+const main = () => {
+  const root = document.getElementById('root')
+  ta = document.createElement('textarea')
+  root.appendChild(ta)
+  connect()
+}
+
+main()

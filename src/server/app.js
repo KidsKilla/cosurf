@@ -1,19 +1,49 @@
-let idCounter = 0
+// import { io } from 'socket.io'
+
+import { createUser } from './newUser.js'
 
 /**
- * @param {SocketIO.Server} io
+ * @typedef {{ id: string, color: string }} User
  */
-export function initSocketApp(io) {
-  io.on('connection', (socket) => {
-    const userId = idCounter++
-    console.log(`User connected, id: ${userId}`)
+/**
+ * @type {Record<string, User>}
+ */
+const ALL_USERS = {}
 
-    // emit `user-connected` event to all open connections except this
-    socket.broadcast.emit('user-connected', { userId })
+const onUsersChange = (
+  /** @type {import('socket.io').Server} */ socket,
+  /** @type {User} */ user,
+  /** @type {string} */ action,
+) => {
+  // emit `user-connected` event to all open connections except this
+  const msg = {
+    action,
+    changedUser: user,
+    allUsers: ALL_USERS,
+  }
+  console.log(`Users changed: ${JSON.stringify(msg)}`)
+  socket.broadcast.emit('users-change', msg)
+}
+
+/**
+ * @param {import('socket.io').Server} io
+ */
+export const initSocketApp = (io) => {
+  io.on('connection', (socket) => {
+    const user = createUser()
+
+    console.log('User connected:', user)
+    ALL_USERS[user.id] = user
+    onUsersChange(socket, user, 'connected')
+
+    socket.emit('init', {
+      iam: user,
+      others: ALL_USERS,
+    })
 
     socket.on('disconnect', () => {
-      console.log(`User disconnected, id: ${userId}`)
-      socket.broadcast.emit('user-disconnected', { userId })
+      delete ALL_USERS[user.id]
+      onUsersChange(socket, user, 'disconnect')
     })
   })
 }
