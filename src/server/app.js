@@ -41,6 +41,17 @@ export const initSocketApp = (io) => {
       others: ALL_USERS,
     })
 
+    // EDIT
+    socket.on('edit-caret', (data) => {
+      console.log('edit-caret', data)
+    })
+    socket.on('edit-input', (data) => {
+      console.log('edit-input', data)
+    })
+    socket.on('edit-select', (data) => {
+      console.log('edit-select', data)
+    })
+
     socket.on('disconnect', () => {
       delete ALL_USERS[user.id]
       onUsersChange(socket, user, 'disconnect')
